@@ -6,6 +6,9 @@ let todos: Todo[] = [];
 
 const router = Router();
 
+type RequestBody = {text: string};
+type RequestParams = {todoId: string};
+
 router.get('/', (req, res) => {
     res.status(200).json({ todos: todos });
 });
@@ -13,22 +16,23 @@ router.get('/', (req, res) => {
 //post
 router.post('/todos', (req, res) => {
     try{
+        const body = req.body as RequestBody;
         const newTodo: Todo = {
             id: new Date().toISOString(),
-            text: req.body.text
+            text: body.text
         };
         todos.push(newTodo);
         res.status(201).json({ message: "success", todos: todos});
     } catch(err) {
         res.status(404).json({message: 'failed'});
     }
-    
 });
 
 //delete
 router.delete('/delete/:todoId', (req, res) => {
     try {
-        todos = todos.filter((todoItem) => todoItem.id !== req.params.todoId);
+        const params = req.params as RequestParams;
+        todos = todos.filter((todoItem) => todoItem.id !== params.todoId);
         res.status(200).json({ message: 'deleted', todos: todos });
     } catch(err) {
         res.status(404).json({message: 'failed'});
@@ -38,9 +42,11 @@ router.delete('/delete/:todoId', (req, res) => {
 //edit
 router.put('/edit/:todoId', (req, res) => {
     try{
-        const todoIndex = todos.findIndex(todoItem => todoItem.id === req.params.todoId);
+        const params = req.params as RequestParams;
+        const body = req.body as RequestBody;
+        const todoIndex = todos.findIndex(todoItem => todoItem.id === params.todoId);
         if (todoIndex >= 0) {
-            todos[todoIndex] = {id: todos[todoIndex].id, text: req.body.text};
+            todos[todoIndex] = {id: todos[todoIndex].id, text: body.text};
             return res.status(200).json({message: 'edited successfully', todos: todos});
         }
     } catch(err) {
